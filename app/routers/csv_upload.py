@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.engine import get_db
 from app.exceptions.exceptions import WaveChallengeException
 from app.repositories.csv_upload_repository import WaveChallengeRepository
+from app.schemas.csv_upload_schemas import ApiResponse
 from app.services.csv_upload_service import WaveChallengeService
 
 router = APIRouter()
@@ -25,6 +26,9 @@ async def upload_csv(csv_file: UploadFile = File(...),
             record_number = file_name.split('.')[0].split('-')[-1]
             csv_file_upload = await timesheet_service.upload_csv_file(
                  csv_file, record_number)
-            return csv_file_upload
+            return ApiResponse(statusCode=HTTPStatus.CREATED, data=csv_file_upload, message="Successfully Created")
     except HTTPException as e:
-        return WaveChallengeException.internal_server_error(e.detail)
+        if e.status_code == 405:
+            raise e
+        else:
+            raise WaveChallengeException.internal_server_error(e.detail)
