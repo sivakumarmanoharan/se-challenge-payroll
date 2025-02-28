@@ -40,13 +40,13 @@ class TimeReport(Base):
 class TimeEntry(Base):
     __tablename__ = 'time_entry'
 
-    time_entry_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    time_entry_id: Mapped[str] = mapped_column(String, primary_key=True)
 
     time_report_id: Mapped[int] = mapped_column(Integer, ForeignKey('time_report.time_report_id'))
     employee_id: Mapped[str] = mapped_column(String(100), ForeignKey('employee.employee_id'))
     job_group_id: Mapped[str] = mapped_column(String(2), ForeignKey('job_group.job_group_id'))
 
-    date_worked: Mapped[Date] = mapped_column(Date)
+    date_worked: Mapped[datetime.date] = mapped_column(Date)
     hours_worked: Mapped[int] = mapped_column(Integer)
 
     # Relationships
