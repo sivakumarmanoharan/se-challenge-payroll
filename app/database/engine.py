@@ -3,11 +3,12 @@ from sqlalchemy.orm import declarative_base
 
 DATABASE_URL = "postgresql+asyncpg://wave:payroll123@db/payroll"
 
-engine = create_async_engine(DATABASE_URL, pool_pre_ping=True)
+engine = create_async_engine(DATABASE_URL)
 async_session = async_sessionmaker(
     engine,
     expire_on_commit=False,
-    class_=AsyncSession
+    class_=AsyncSession,
+    pool_pre_ping=True,
 )
 
 Base = declarative_base()
