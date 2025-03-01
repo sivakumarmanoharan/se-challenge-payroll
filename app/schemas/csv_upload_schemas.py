@@ -1,10 +1,12 @@
+from datetime import date
+
 from pydantic import BaseModel
 from typing_extensions import List, Optional, T
 
 
 class EmployeeRecord(BaseModel):
     employee_id: str
-    hours_worked: int
+    hours_worked: float
     job_group: str
     date: str
 
@@ -24,3 +26,22 @@ class ApiResponse(BaseModel):
             "data": self.data.dict() if isinstance(self.data, BaseModel) else self.data,
             "statusCode": self.statusCode
         }
+
+
+class PayPeriod(BaseModel):
+    startDate: date
+    endDate: date
+
+
+class EmployeeReport(BaseModel):
+    employeeId: str
+    payPeriod: PayPeriod
+    amountPaid: str  # Formatted as a currency string (e.g. "$300.00")
+
+
+class PayrollReport(BaseModel):
+    employeeReports: List[EmployeeReport]
+
+
+class PayrollReportResponse(BaseModel):
+    payrollReport: PayrollReport

@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Integer, ForeignKey, String, Date
+from sqlalchemy import Integer, ForeignKey, String, Date, Float
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from app.database.engine import Base
 from datetime import datetime,timezone
@@ -47,9 +47,19 @@ class TimeEntry(Base):
     job_group_id: Mapped[str] = mapped_column(String(2), ForeignKey('job_group.job_group_id'))
 
     date_worked: Mapped[datetime.date] = mapped_column(Date)
-    hours_worked: Mapped[int] = mapped_column(Integer)
+    hours_worked: Mapped[float] = mapped_column(Float)
 
     # Relationships
     time_report: Mapped["TimeReport"] = relationship("TimeReport", back_populates="time_entries")
     employee: Mapped["Employee"] = relationship("Employee", back_populates="time_entries")
     job_group: Mapped["JobGroup"] = relationship("JobGroup", back_populates="time_entries")
+
+    def to_dict(self):
+        return {
+            "time_entry_id": self.time_entry_id,
+            "time_report_id": self.time_report_id,
+            "employee_id": self.employee_id,
+            "job_group_id": self.job_group_id,
+            "date_worked": self.date_worked if self.date_worked else None,
+            "hours_worked": self.hours_worked,
+        }

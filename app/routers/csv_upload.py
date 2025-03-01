@@ -15,7 +15,7 @@ async def get_timesheet_service(db: AsyncSession = Depends(get_db)):
     return WaveChallengeService(repository)
 
 
-@router.post('/upload-csv', status_code=HTTPStatus.CREATED)
+@router.post('/payroll-report', status_code=HTTPStatus.CREATED)
 async def upload_csv(csv_file: UploadFile = File(...),
                      timesheet_service: WaveChallengeService = Depends(get_timesheet_service)):
     try:
@@ -32,3 +32,11 @@ async def upload_csv(csv_file: UploadFile = File(...),
             raise e
         else:
             raise WaveChallengeException.internal_server_error(e.detail)
+
+@router.get('/payroll-report', status_code=HTTPStatus.OK)
+async def generate_payroll(timesheet_service:WaveChallengeService = Depends(get_timesheet_service)):
+    try:
+        payroll_report = await timesheet_service.generate_payroll_service()
+        return payroll_report
+    except HTTPException as e:
+        raise WaveChallengeException.internal_server_error(e.detail)

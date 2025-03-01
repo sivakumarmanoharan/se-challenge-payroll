@@ -1,5 +1,6 @@
 import io
 import os
+import uuid
 from datetime import datetime, timezone
 import pandas as pd
 from fastapi import File
@@ -48,7 +49,7 @@ class WaveChallengeRepository:
                     raise ValueError("Incorrect date format passed", v)
 
                 try:
-                    hours_worked = int(hours_str)
+                    hours_worked = float(hours_str)
                 except ValueError as v:
                     raise ValueError("Incorrect hours format passed", v)
 
@@ -63,7 +64,7 @@ class WaveChallengeRepository:
                     self.session.add(employee_record)
                     await self.session.commit()
                 time_entry = TimeEntry(
-                    time_entry_id=f"{record_number}_{date_str}",
+                    time_entry_id=f"{record_number}_{uuid.uuid4()}",
                     time_report_id=int(record_number),
                     employee_id=employee_id,
                     job_group_id=job_group_id,
@@ -85,3 +86,20 @@ class WaveChallengeRepository:
         except SQLAlchemyError as e:
             raise WaveChallengeException.internal_server_error(f"Database querying issue:{e}")
 
+    async def job_group_data(self):
+        try:
+            job_group_data = await self.session.execute(select(JobGroup))
+            job_group_data = job_group_data.scalars().all()
+            print({j.job_group_id: j.wages for j in job_group_data})
+            return {j.job_group_id: j.wages for j in job_group_data}
+        except SQLAlchemyError as e:
+            raise WaveChallengeException.internal_server_error(f"Issue with finding job group data{e.code}")
+
+    async def time_entry_data(self):
+        try:
+            time_entry_data = await self.session.execute(
+                select(TimeEntry).order_by(TimeEntry.employee_id, TimeEntry.date_worked))
+            time_entry_data = time_entry_data.scalars().all()
+            return [entry.to_dict() for entry in time_entry_data]
+        except SQLAlchemyError as e:
+            raise WaveChallengeException.internal_server_error(f"Issue with finding time entry data: {e.code}")
