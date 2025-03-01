@@ -36,7 +36,7 @@ class PayPeriod(BaseModel):
 class EmployeeReport(BaseModel):
     employeeId: str
     payPeriod: PayPeriod
-    amountPaid: str  # Formatted as a currency string (e.g. "$300.00")
+    amountPaid: str
 
 
 class PayrollReport(BaseModel):
