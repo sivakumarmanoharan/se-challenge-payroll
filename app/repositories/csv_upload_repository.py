@@ -1,5 +1,4 @@
 import io
-import os
 import uuid
 from datetime import datetime, timezone
 import pandas as pd
@@ -79,7 +78,6 @@ class WaveChallengeRepository:
                     date=date_str
                 )
                 list_employees.append(employee_record)
-            # Commit all new TimeEntry records.
             await self.session.commit()
             return ListRecords(records=list_employees)
 
@@ -90,7 +88,6 @@ class WaveChallengeRepository:
         try:
             job_group_data = await self.session.execute(select(JobGroup))
             job_group_data = job_group_data.scalars().all()
-            print({j.job_group_id: j.wages for j in job_group_data})
             return {j.job_group_id: j.wages for j in job_group_data}
         except SQLAlchemyError as e:
             raise WaveChallengeException.internal_server_error(f"Issue with finding job group data{e.code}")
@@ -103,3 +100,6 @@ class WaveChallengeRepository:
             return [entry.to_dict() for entry in time_entry_data]
         except SQLAlchemyError as e:
             raise WaveChallengeException.internal_server_error(f"Issue with finding time entry data: {e.code}")
+
+    async def add_job_group(self, job_group):
+        pass

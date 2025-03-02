@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.engine import get_db
 from app.exceptions.exceptions import WaveChallengeException
 from app.repositories.csv_upload_repository import WaveChallengeRepository
-from app.schemas.csv_upload_schemas import ApiResponse
+from app.schemas.csv_upload_schemas import ApiResponse, JobGroups
 from app.services.csv_upload_service import WaveChallengeService
 
 router = APIRouter()
@@ -25,7 +25,7 @@ async def upload_csv(csv_file: UploadFile = File(...),
         else:
             record_number = file_name.split('.')[0].split('-')[-1]
             csv_file_upload = await timesheet_service.upload_csv_file(
-                 csv_file, record_number)
+                csv_file, record_number)
             return ApiResponse(statusCode=HTTPStatus.CREATED, data=csv_file_upload, message="Successfully Created")
     except HTTPException as e:
         if e.status_code == 405:
@@ -33,10 +33,23 @@ async def upload_csv(csv_file: UploadFile = File(...),
         else:
             raise WaveChallengeException.internal_server_error(e.detail)
 
+
 @router.get('/payroll-report', status_code=HTTPStatus.OK)
-async def generate_payroll(timesheet_service:WaveChallengeService = Depends(get_timesheet_service)):
+async def generate_payroll(timesheet_service: WaveChallengeService = Depends(get_timesheet_service)):
     try:
         payroll_report = await timesheet_service.generate_payroll_service()
         return payroll_report
     except HTTPException as e:
         raise WaveChallengeException.internal_server_error(e.detail)
+
+
+@router.post('/job-group', status_code=HTTPStatus.CREATED)
+async def add_job_group(
+        job_group:JobGroups,
+        timesheet_service:WaveChallengeService = Depends(get_timesheet_service),
+        ):
+    try:
+        add_job_group = await timesheet_service.add_job_group(job_group)
+        return ApiResponse(statusCode=HTTPStatus.CREATED,data=add_job_group,message="Added job groups successfully")
+    except HTTPException as e:
+        raise WaveChallengeException.internal_server_error(f"Issue in adding job groups: {e.detail}")

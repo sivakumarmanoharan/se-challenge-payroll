@@ -73,3 +73,10 @@ class WaveChallengeService:
             return PayrollReportResponse(payrollReport=payroll_report)
         except HTTPException as e:
             raise WaveChallengeException.internal_server_error(e.detail)
+
+    async def add_job_group(self, job_group):
+        try:
+            job_group_addition = await self.repository.add_job_group(job_group)
+            return job_group_addition
+        except HTTPException as e:
+            raise  WaveChallengeException.internal_server_error(e.detail)

@@ -17,6 +17,8 @@ services:
 
   api:
     build: .
+    environment:
+      - DATABASE_URL = "postgresql+asyncpg://wave:payroll123@db/payroll"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"

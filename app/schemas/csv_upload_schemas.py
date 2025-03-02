@@ -45,3 +45,8 @@ class PayrollReport(BaseModel):
 
 class PayrollReportResponse(BaseModel):
     payrollReport: PayrollReport
+
+
+class JobGroups(BaseModel):
+    job_group_id: str
+    wages: int

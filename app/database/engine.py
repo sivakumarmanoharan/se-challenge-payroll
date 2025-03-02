@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://wave:payroll123@localhost/payroll"
+DATABASE_URL = "postgresql+asyncpg://wave:payroll123@db/payroll"
 
 engine = create_async_engine(DATABASE_URL, pool_pre_ping=True)
 async_session = async_sessionmaker(
