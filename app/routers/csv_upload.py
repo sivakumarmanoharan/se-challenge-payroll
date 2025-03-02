@@ -45,11 +45,14 @@ async def generate_payroll(timesheet_service: WaveChallengeService = Depends(get
 
 @router.post('/job-group', status_code=HTTPStatus.CREATED)
 async def add_job_group(
-        job_group:JobGroups,
-        timesheet_service:WaveChallengeService = Depends(get_timesheet_service),
-        ):
+        job_group: JobGroups,
+        timesheet_service: WaveChallengeService = Depends(get_timesheet_service),
+):
     try:
-        add_job_group = await timesheet_service.add_job_group(job_group)
-        return ApiResponse(statusCode=HTTPStatus.CREATED,data=add_job_group,message="Added job groups successfully")
+        new_job_group = await timesheet_service.add_job_group(job_group)
+        return ApiResponse(statusCode=HTTPStatus.CREATED, data=new_job_group, message="Added job groups successfully")
     except HTTPException as e:
-        raise WaveChallengeException.internal_server_error(f"Issue in adding job groups: {e.detail}")
+        if e.status_code == 405:
+            raise e
+        else:
+            raise WaveChallengeException.internal_server_error(e.detail)

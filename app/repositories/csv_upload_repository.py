@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions.exceptions import WaveChallengeException
 from app.models.time_entries import TimeReport, JobGroup, Employee, TimeEntry
-from app.schemas.csv_upload_schemas import EmployeeRecord, ListRecords
+from app.schemas.csv_upload_schemas import EmployeeRecord, ListRecords, JobGroups
 
 
 class WaveChallengeRepository:
@@ -101,5 +101,21 @@ class WaveChallengeRepository:
         except SQLAlchemyError as e:
             raise WaveChallengeException.internal_server_error(f"Issue with finding time entry data: {e.code}")
 
-    async def add_job_group(self, job_group):
-        pass
+    async def add_job_group(self, job_group: JobGroups):
+        try:
+            job_group_existing= await self.session.execute(select(JobGroup).where(JobGroup.job_group_id==job_group.job_group_id))
+            job_group_existing = job_group_existing.scalars().all()
+            if job_group_existing:
+                raise WaveChallengeException.same_file_upload(f"Job group already present")
+            new_job_group = JobGroup(
+                job_group_id=job_group.job_group_id,
+                wages=job_group.wages
+            )
+            self.session.add(new_job_group)
+            await self.session.commit()
+            return JobGroups(
+                job_group_id=job_group.job_group_id,
+                wages=job_group.wages
+            )
+        except SQLAlchemyError as e:
+            raise WaveChallengeException.internal_server_error(f"Issue with adding job groups: {e.code}")

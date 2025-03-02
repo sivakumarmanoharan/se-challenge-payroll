@@ -5,7 +5,8 @@ from fastapi import HTTPException, File
 from app.core.utils.utils import get_pay_period
 from app.exceptions.exceptions import WaveChallengeException
 from app.repositories.csv_upload_repository import WaveChallengeRepository
-from app.schemas.csv_upload_schemas import ListRecords, EmployeeReport, PayPeriod, PayrollReport, PayrollReportResponse
+from app.schemas.csv_upload_schemas import ListRecords, EmployeeReport, PayPeriod, PayrollReport, PayrollReportResponse, \
+    JobGroups
 
 
 class WaveChallengeService:
@@ -77,6 +78,9 @@ class WaveChallengeService:
     async def add_job_group(self, job_group):
         try:
             job_group_addition = await self.repository.add_job_group(job_group)
-            return job_group_addition
+            return JobGroups.model_validate(job_group_addition)
         except HTTPException as e:
-            raise  WaveChallengeException.internal_server_error(e.detail)
+            if e.status_code == 405:
+                raise e
+            else:
+                raise  WaveChallengeException.internal_server_error(e.detail)
