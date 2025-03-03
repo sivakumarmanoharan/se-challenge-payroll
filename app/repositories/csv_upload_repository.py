@@ -52,6 +52,10 @@ class WaveChallengeRepository:
                 except ValueError as v:
                     raise ValueError("Incorrect hours format passed", v)
 
+                job_group_json = await self.job_group_data()
+                job_group_list = list(job_group_json.keys())
+                if job_group_id not in job_group_list:
+                    raise WaveChallengeException.same_file_upload("Job group not configured")
                 employee_query = select(Employee).where(Employee.employee_id == employee_id)
                 employee = await self.session.execute(employee_query)
                 employee = employee.scalars().all()
