@@ -86,6 +86,7 @@ class WaveChallengeRepository:
             return ListRecords(records=list_employees)
 
         except SQLAlchemyError as e:
+            await self.session.rollback()
             raise WaveChallengeException.internal_server_error(f"Database querying issue:{e}")
 
     async def job_group_data(self):
@@ -122,4 +123,5 @@ class WaveChallengeRepository:
                 wages=job_group.wages
             )
         except SQLAlchemyError as e:
+            await self.session.rollback()
             raise WaveChallengeException.internal_server_error(f"Issue with adding job groups: {e.code}")
