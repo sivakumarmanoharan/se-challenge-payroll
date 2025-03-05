@@ -46,7 +46,7 @@ To set up the job groups, use the `/job-group` API endpoint. Send a JSON payload
 
 ### Upload Payroll Reports
 
-Upload a payroll CSV file using the POST API endpoint `/payroll-report`. On successful upload, the server returns a **201 Created** response. If you attempt to upload the same file again, the API responds with a **405 Method Not Allowed** error, indicating that the record already exists. If you attempt to upload a file, other than a CSV, then it would throw a **400 Bad Request** exception
+Upload a payroll CSV file using the POST API endpoint `/payroll-report`. On successful upload, the server returns a **201 Created** response. If you attempt to upload the same file again, the API responds with a **405 Method Not Allowed** error, indicating that the record already exists. If you attempt to upload a file, other than a CSV, then it would throw a **400 Bad Request** exception. If you attempt a file that contains non-configured job groups, it will throw a **405 Method not allowed** exception stating that job group is not configured.
 
 ### Check Payroll Reports
 
