@@ -1,153 +1,108 @@
-# Wave Software Development Challenge
+# Sivakumar App
 
-Applicants for the Full-stack Developer role at Wave must
-complete the following challenge, and submit a solution prior to the onsite
-interview.
+This repository contains a payroll reporting system that allows you to configure job groups, upload payroll CSV files, and review the uploaded reports through a REST API. The application is containerized using Docker and provides interactive API documentation via Swagger UI.
 
-The purpose of this exercise is to create something that we can work on
-together during the onsite. We do this so that you get a chance to collaborate
-with Wavers during the interview in a situation where you know something better
-than us (it's your code, after all!)
+## Getting Started
 
-There isn't a hard deadline for this exercise; take as long as you need to
-complete it. However, in terms of total time spent actively working on the
-challenge, we ask that you not spend more than a few hours, as we value your
-time and are happy to leave things open to discussion in the on-site interview.
+### 1. Clone the Repository
 
-Please use whatever programming language and framework you feel the most
-comfortable with.
+Open a terminal and execute the following commands:
 
-Feel free to email [dev.careers@waveapps.com](dev.careers@waveapps.com) if you
-have any questions.
+```bash
+git clone sivakumar_manoharan.bundle sivakumar_app
+cd sivakumar_app
+```
 
-## Project Description
+### 2. Build and Run the Application
 
-Imagine that this is the early days of Wave's history, and that we are prototyping a new payroll system API. A front end (that hasn't been developed yet, but will likely be a single page application) is going to use our API to achieve two goals:
+Build and start the application using Docker Compose:
 
-1. Upload a CSV file containing data on the number of hours worked per day per employee
-1. Retrieve a report detailing how much each employee should be paid in each _pay period_
+```bash
+docker-compose up --build
+```
 
-All employees are paid by the hour (there are no salaried employees.) Employees belong to one of two _job groups_ which determine their wages; job group A is paid $20/hr, and job group B is paid $30/hr. Each employee is identified by a string called an "employee id" that is globally unique in our system.
+### 3. Access the API Documentation
 
-Hours are tracked per employee, per day in comma-separated value files (CSV).
-Each individual CSV file is known as a "time report", and will contain:
+Once the build is complete, open your browser and navigate to:
 
-1. A header, denoting the columns in the sheet (`date`, `hours worked`,
-   `employee id`, `job group`)
-1. 0 or more data rows
+```
+http://localhost:8000/docs
+```
 
-In addition, the file name should be of the format `time-report-x.csv`,
-where `x` is the ID of the time report represented as an integer. For example, `time-report-42.csv` would represent a report with an ID of `42`.
+This will load the Swagger UI, where you can interact with the API endpoints.
 
-You can assume that:
+## API Usage
 
-1. Columns will always be in that order.
-1. There will always be data in each column and the number of hours worked will always be greater than 0.
-1. There will always be a well-formed header line.
-1. There will always be a well-formed file name.
+### Configure Job Groups
 
-A sample input file named `time-report-42.csv` is included in this repo.
+To set up the job groups, use the `/job-group` API endpoint. Send a JSON payload with the required job group details. For example:
 
-### What your API must do:
+```json
+{
+  "job_group_id": "A",
+  "wages": 20
+}
+```
 
-We've agreed to build an API with the following endpoints to serve HTTP requests:
+### Upload Payroll Reports
 
-1. An endpoint for uploading a file.
+Upload a payroll CSV file using the POST API endpoint `/payroll-report`. On successful upload, the server returns a **201 Created** response. If you attempt to upload the same file again, the API responds with a **405 Method Not Allowed** error, indicating that the record already exists. If you attempt to upload a file, other than a CSV, then it would throw a **400 Bad Request** exception
 
-   - This file will conform to the CSV specifications outlined in the previous section.
-   - Upon upload, the timekeeping information within the file must be stored to a database for archival purposes.
-   - If an attempt is made to upload a file with the same report ID as a previously uploaded file, this upload should fail with an error message indicating that this is not allowed.
+### Check Payroll Reports
 
-2. An endpoint for retrieving a payroll report structured in the following way:
+To view the payroll reports:
 
-   _NOTE:_ It is not the responsibility of the API to return HTML, as we will delegate the visual layout and redering to the front end. The expectation is that this API will only return JSON data.
+1. Open Swagger UI at `http://localhost:8000/docs`.
+2. Locate the **GET /payroll-report** endpoint.
+3. Click **Try it out** and then **Execute**.
 
-   - Return a JSON object `payrollReport`.
-   - `payrollReport` will have a single field, `employeeReports`, containing a list of objects with fields `employeeId`, `payPeriod`, and `amountPaid`.
-   - The `payPeriod` field is an object containing a date interval that is roughly biweekly. Each month has two pay periods; the _first half_ is from the 1st to the 15th inclusive, and the _second half_ is from the 16th to the end of the month, inclusive. `payPeriod` will have two fields to represent this interval: `startDate` and `endDate`.
-   - Each employee should have a single object in `employeeReports` for each pay period that they have recorded hours worked. The `amountPaid` field should contain the sum of the hours worked in that pay period multiplied by the hourly rate for their job group.
-   - If an employee was not paid in a specific pay period, there should not be an object in `employeeReports` for that employee + pay period combination.
-   - The report should be sorted in some sensical order (e.g. sorted by employee id and then pay period start.)
-   - The report should be based on all _of the data_ across _all of the uploaded time reports_, for all time.
+### Uploading Multiple CSV Files
 
-As an example, given the upload of a sample file with the following data:
+- You can upload multiple CSV files.
+- Ensure that every CSV file uses the same columns.
+- If reusing the same file name, change the record number accordingly to avoid duplicate records.
 
-   | date       | hours worked | employee id | job group |
-   | ---------- | ------------ | ----------- | --------- |
-   | 4/1/2023   | 10           | 1           | A         |
-   | 14/1/2023  | 5            | 1           | A         |
-   | 20/1/2023  | 3            | 2           | B         |
-   | 20/1/2023  | 4            | 1           | A         |
+## Implementation Details & Developer Notes
 
-A request to the report endpoint should return the following JSON response:
+### How did you test that your implementation was correct?
 
-   ```json
-   {
-     "payrollReport": {
-       "employeeReports": [
-         {
-           "employeeId": "1",
-           "payPeriod": {
-             "startDate": "2023-01-01",
-             "endDate": "2023-01-15"
-           },
-           "amountPaid": "$300.00"
-         },
-         {
-           "employeeId": "1",
-           "payPeriod": {
-             "startDate": "2023-01-16",
-             "endDate": "2023-01-31"
-           },
-           "amountPaid": "$80.00"
-         },
-         {
-           "employeeId": "2",
-           "payPeriod": {
-             "startDate": "2023-01-16",
-             "endDate": "2023-01-31"
-           },
-           "amountPaid": "$90.00"
-         }
-       ]
-     }
-   }
-   ```
+- **Manual Testing via Swagger UI:**  
+  Endpoints were manually tested using the interactive Swagger UI at `http://localhost:8000/docs`, ensuring that each endpoint behaved as expected.
+- **API Response Verification:**  
+  Specific scenarios, such as duplicate CSV uploads returning a **405 Method Not Allowed** and successful uploads returning a **201 Created** response, were verified using test cases and tools like cURL or Postman.
 
-We consider ourselves to be language agnostic here at Wave, so feel free to use any combination of technologies you see fit to both meet the requirements and showcase your skills. We only ask that your submission:
+### If this application was destined for a production environment, what would you add or change?
 
-- Is easy to set up
-- Can run on either a Linux or Mac OS X developer machine
-- Does not require any non open-source software
-- Includes all the source code you write for the submission, including any models used for setting up your database
+- **Environment Variable Separation:**
+  - As it is in a deployment setting and there are no crucial variables configured, those are within the code. But if it is aimed to get deployed in a production setting, hiding secret details is crucial.
+  - Hence, I would hide the most secret variables such as connection strings, API token passwords etc. in a separate .env file and configure those environment variables in the webapps separately.
+- **Security Enhancements:**  
+  - While deploying in a production environment, I will add authentication methods to verify such as JWT token verification for individual users that contains persona and access levels of the user.
+- **Enhanced Exceptions Handling:**
+  -  If it is getting deployed in a production setting, I will add more scenarios such as Column mismatches while uploading CSV files etc.
+- **Persistent Data Storage:**  
+  - When it comes to production environment, I will implement Redis Caching or any other in-memory storage in order to reduce the time taken for fetching of data using GET API requests.
+- **Scalability Improvements:**  
+  - Coming to the scalability of the application, I will implement the integration of performance monitoring tools such as Kubernetes, Prometheus etc.
+- **CI/CD Pipeline:**  
+  -I have already automated the development flow using Docker. But if it is destined to a production setting, I would implement automated testing pipelines using GitHub Actions.
+- **Branch Protection:**
+  - While coming to a deployment setting, I would definitely implement branching rules and the access levels in a such a way that who should directly merge the main branch and who has the access to merge the Pull Requests raised by the contributors.
+- **Comprehensive Documentation:**  
+  - When targeting to a production environment, I would strongly adhere in writing a comprehensive documentation with different scenarios and what happens when different types of files are given as inputs.
 
-### Documentation:
+### What compromises did you have to make as a result of the time constraints of this challenge?
 
-Please commit the following to this `README.md`:
+- **Limited Test Coverage:**  
+  While core functionalities were tested, the application may lack extensive unit and integration tests that would be expected in a production-grade solution.
+- **Basic Error Handling:**  
+  Error handling is upto the requirements and could be expanded to provide more detailed diagnostics and resilience.
+- **Non-implementation of security measures**  
+  The API is not implemented with the security measures such as verification of personas or access levels.
+- **Minimal Optimization:**  
+  Certain performance optimizations and code refactoring efforts were deferred in favor of delivering a functional minimum viable product.
 
-1. Instructions on how to build/run your application
-1. Answers to the following questions:
-   - How did you test that your implementation was correct?
-   - If this application was destined for a production environment, what would you add or change?
-   - What compromises did you have to make as a result of the time constraints of this challenge?
+## Conclusion
 
-## Submission Instructions
+This README provides you with the necessary steps to deploy, test, and use the payroll reporting system. The included developer notes offer insights into the testing process, production-readiness enhancements, and compromises made due to time constraints. Feel free to enhance the application further based on your requirements.
 
-1. Clone the repository.
-1. Complete your project as described above within your local repository.
-1. Ensure everything you want to commit is committed.
-1. Create a git bundle: `git bundle create your_name.bundle --all`
-1. Email the bundle file to [dev.careers@waveapps.com](dev.careers@waveapps.com) and CC the recruiter you have been in contact with.
-
-## Evaluation
-
-Evaluation of your submission will be based on the following criteria.
-
-1. Did you follow the instructions for submission?
-1. Did you complete the steps outlined in the _Documentation_ section?
-1. Were models/entities and other components easily identifiable to the
-   reviewer?
-1. What design decisions did you make when designing your models/entities? Are
-   they explained?
-1. Did you separate any concerns in your application? Why or why not?
-1. Does your solution use appropriate data types for the problem as described?

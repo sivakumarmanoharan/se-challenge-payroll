@@ -17,7 +17,7 @@ class WaveChallengeService:
         try:
             matching_record_number = await self.repository.is_record_there(record_number)
             if matching_record_number:
-                return WaveChallengeException.same_file_upload("Record already exists")
+                return WaveChallengeException.same_file_upload("Record already exists. Method not allowed")
             upload_csv_file = await self.repository.upload_file_in_db(csv_file, record_number)
             return ListRecords.model_validate(upload_csv_file)
         except HTTPException as e:
