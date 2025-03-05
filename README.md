@@ -1,6 +1,14 @@
-# Sivakumar App
+# Wave Challenge App
 
 This repository contains a payroll reporting system that allows you to configure job groups, upload payroll CSV files, and review the uploaded reports through a REST API. The application is containerized using Docker and provides interactive API documentation via Swagger UI.
+
+The challenge is completed using PostgreSQL as a database to store timesheet entries, FastAPI as a backend-server with SQLAlchemy for table models, Pydantic for Schema models and Docker for running the containerized application.
+
+# Prerequisite:
+  - Python 3.10+
+  - Docker 
+
+Install docker and make sure it is up and running.
 
 ## Getting Started
 
@@ -16,9 +24,9 @@ cd sivakumar_app
 ### 2. Build and Run the Application
 
 Build and start the application using Docker Compose:
-
+### For  Windows/macOS/Linux
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 ### 3. Access the API Documentation
@@ -30,6 +38,30 @@ http://localhost:8000/docs
 ```
 
 This will load the Swagger UI, where you can interact with the API endpoints.
+
+### 4. Closing the container
+
+#### List all containers:
+```bash
+  docker ps -a
+```
+### Remove the listed containers one by one:
+```bash
+  docker rm container_id
+```
+### List all volumes:
+
+```bash
+docker volume ls
+```
+
+### Remove the required volume with pg_data
+```bash
+docker volume rm volume_name
+```
+
+# Demo Video 
+### [Click here to watch the demo](https://youtu.be/K6Cgkd7NEIE)
 
 ## API Usage
 
